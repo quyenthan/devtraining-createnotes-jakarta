@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <record_update>
-    <sys_dictionary action="INSERT_OR_UPDATE" element="" table="x_snc_createnotes_note">
+    <sys_dictionary action="INSERT_OR_UPDATE" element="" table="x_snc_createnotes_category">
         <active>true</active>
         <array>false</array>
         <array_denormalized>false</array_denormalized>
@@ -34,7 +34,7 @@
         <internal_type display_value="Collection">collection</internal_type>
         <mandatory>false</mandatory>
         <max_length>40</max_length>
-        <name>x_snc_createnotes_note</name>
+        <name>x_snc_createnotes_category</name>
         <next_element/>
         <primary>false</primary>
         <read_only>false</read_only>
@@ -51,16 +51,16 @@
         <staged>false</staged>
         <sys_class_name>sys_dictionary</sys_class_name>
         <sys_created_by>admin</sys_created_by>
-        <sys_created_on>2017-04-10 15:48:52</sys_created_on>
-        <sys_id>d54546b54f4213003d9ec3818110c73c</sys_id>
+        <sys_created_on>2018-05-21 06:45:22</sys_created_on>
+        <sys_id>2d94ae4c4f5213003d9ec3818110c758</sys_id>
         <sys_mod_count>0</sys_mod_count>
-        <sys_name>x_snc_createnotes_note</sys_name>
+        <sys_name>x_snc_createnotes_category</sys_name>
         <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
         <sys_policy/>
         <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
-        <sys_update_name>sys_dictionary_x_snc_createnotes_note_NULL</sys_update_name>
-        <sys_updated_by>system</sys_updated_by>
-        <sys_updated_on>2018-05-14 04:42:14</sys_updated_on>
+        <sys_update_name>sys_dictionary_x_snc_createnotes_category_null</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-21 06:45:22</sys_updated_on>
         <table_reference>false</table_reference>
         <text_index>false</text_index>
         <unique>false</unique>

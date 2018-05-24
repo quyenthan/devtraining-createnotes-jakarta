@@ -1,46 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <record_update table="sp_widget">
     <sp_widget action="INSERT_OR_UPDATE">
-        <client_script><![CDATA[function($rootScope,$scope, spUtil) {
+        <client_script><![CDATA[function($rootScope, $scope, spUtil) {
 	/* widget controller */
 	var c = this;
 	// Use a position indicator to know which record to update
 	c.notePos = 0;
+	c.data.selectedNote = {};
+	c.data.notes = null;
+	c.data.isShow = false;
 
-	c.selectItem = function(idx) {  
-		// Set the position indicator to the index value passed in on select
-		c.notePos = idx;
-		var id = c.data.notes[idx].sys_id;
-		console.log('Note ID: ' + id);
-		$rootScope.noteID = id;
-		$rootScope.$emit('selectNote', id);
-	}
 	// Subscribe to event.  Set the new title and note values on the 
 	// c.data object
-	$rootScope.$on('updateTitle', function(event,data) { 
-		c.data.notes[c.notePos].title = data.title;
-		c.data.notes[c.notePos].note = data.note;
+	$rootScope.$on('updateNoteObj', function(event,data) {
+		c.data.selectedNote.note_title = data.note_title;
+		c.data.selectedNote.note_details = data.note_details;		
 	});
 
-	c.newNote = function() {
-		console.log(c.options.title);
-		if(!c.options.title){
-			console.log(c.options.title);
-		}
-		c.server.get({
-			action: 'newNote'
-		}).then(function(r) {
+	$rootScope.$on('showNoteList', function (event, noteList){
+		c.data.notes = noteList;
+		c.options.title = $rootScope.categoryName.toString(); // Not working
+	});
+	
+	$rootScope.$on('toggleNoteList', function (event, isShow){
+		// Show this widget
+		console.log('isShow', isShow);
+		c.data.isShow = isShow;
+		console.log('c.data.isShow', c.data.isShow);
+	});
 
+	$rootScope.$on('deleteNote', function(event, noteSysId) {
+		// Remove Note on list
+		c.data.notes = $.grep(c.data.notes, function(item) { 
+			return item.sys_id !== noteSysId;
+		});
+		// Refresh count Note on Category
+		$rootScope.$emit('updateNumberOfNote', c.data.notes.length);
+	});
+
+	$rootScope.$on('refreshList', function (event){
+		c.data.notes = null;
+	});
+
+	c.selectItem = function(selectedNote) { 
+		// Hide this widget
+		c.data.isShow = false;
+		
+		// Set the position indicator to the index value passed in on select
+		c.data.selectedNote = selectedNote;
+		var id = selectedNote.sys_id;
+		$rootScope.noteID = id;
+		$rootScope.$emit('selectNote', id);
+		// Empty Category Detail
+		$rootScope.$emit('showCategoryDetail', null);
+	}
+
+	c.newNote = function() {
+		c.server.get({
+			action: 'newNote',
+			categoryId : $rootScope.categoryId
+		}).then(function(r) {
 			c.data.notes.unshift(r.data.newNote);
 			c.data.noteID = r.data.noteID;
 			$rootScope.noteID = c.data.noteID;
-			$rootScope.$emit('selectNote', c.data.noteID);
+			//$rootScope.$emit('selectNote', c.data.noteID);
+			// Refresh count Note on Category
+			$rootScope.$emit('updateNumberOfNote', c.data.notes.length);
 		});
 	}
-
-	$rootScope.$on('deleteNote', function(event,data) {
-		c.data.notes.splice($scope.notePos, 1);
-	});
 
 	c.snNoteUpdate = function(name){
 		for (var i = 0; i < c.data.notes.length; i++){
@@ -61,16 +88,17 @@
 		});
 	}
 
-	spUtil.recordWatch($scope, "x_snc_createnotes_note", "numberANYTHING", function(name) {
-		console.log(name);
+	spUtil.recordWatch($scope, "x_snc_createnotes_qt_note", "numberSTARTSWITHQT", function(name) {
 		if (name.data.operation == "insert"){
 			c.server.refresh();
 		}
 		if (name.data.operation == "update"){
-			c.snNoteUpdate(name);
+			//c.snNoteUpdate(name);
+			c.server.refresh();
 		}
 		if (name.data.operation == "delete"){
-			c.snNoteDelete(name.data.sys_id);
+			//c.snNoteDelete(name.data.sys_id);
+			c.server.refresh();
 		}
 	});
 }
@@ -79,6 +107,9 @@
         <css>h3.panel-title {
   font-size:20px;
   padding-top:5px;
+}
+#modal-note-body {
+    resize: none;
 }</css>
         <data_table>sp_instance</data_table>
         <demo_data/>
@@ -94,42 +125,20 @@
         <public>false</public>
         <roles/>
         <script><![CDATA[(function() {
-
-	data.notes = [];
-	var noteGR = new GlideRecord('x_snc_createnotes_note');
-	noteGR.addQuery('user', gs.getUser().getID());
-	noteGR.orderByDesc('sys_created_on');
-	noteGR.setLimit(options.maximum_records_to_display);
-	noteGR.query();
-	while (noteGR.next()) {
-		var noteObj = {};
-
-		$sp.getRecordDisplayValues(noteObj, noteGR, 'number,title,sys_id');
-
-		noteObj.note = noteGR.getValue('note').slice(0,20);
-
-		data.notes.push(noteObj);
-	}
-
+	//data.isShow = false;
+	console.log(data.isShow ? data.isShow.toString() : "");
 	if (input) {
 		if (input.action == 'newNote') {
-			console.log(options.title);
-			if(!options.title){
-				console.log(options.title);
-			}
-			var newNote = new GlideRecord('x_snc_createnotes_note');
+			var newNote = new GlideRecord('x_snc_createnotes_qt_note');
 			newNote.newRecord();
+			newNote.category = input.categoryId;
 			var id = newNote.insert();
 			data.noteID = id;
 			data.newNote = {};
-			$sp.getRecordValues(data.newNote,newNote,"title,note,sys_id");
-
+			$sp.getRecordValues(data.newNote, newNote, "note_title, note_details, sys_id, category");
 		}
 		if(input.action == 'snDeleteNote'){
-			var deleteNote = new GlideRecord('x_snc_createnotes_note');
-			console.log(deleteNote);
-			console.log(input.noteId);
-			console.log(deleteNote.get(input.noteId));
+			var deleteNote = new GlideRecord('x_snc_createnotes_qt_note');
 			if(deleteNote.get(input.noteId)){
 				deleteNote.deleteRecord();
 			}
@@ -142,20 +151,20 @@
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2017-10-14 01:08:53</sys_created_on>
         <sys_id>296321a54f7d4f004e584b8d0210c7a9</sys_id>
-        <sys_mod_count>50</sys_mod_count>
+        <sys_mod_count>183</sys_mod_count>
         <sys_name>Notes List</sys_name>
         <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
         <sys_policy/>
         <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
         <sys_update_name>sp_widget_296321a54f7d4f004e584b8d0210c7a9</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2018-05-14 03:10:21</sys_updated_on>
-        <template><![CDATA[<div class="panel panel-default">
+        <sys_updated_on>2018-05-24 03:46:50</sys_updated_on>
+        <template><![CDATA[<div class="panel panel-primary" ng-show="c.data.isShow">
   <div class="panel-heading clearfix">
     <h3 class="panel-title pull-left">
       {{::c.options.title}}
     </h3>
-    <button class="btn btn-default pull-right" ng-click="c.newNote()"> 
+    <button class="btn btn-default pull-right" ng-click="c.newNote()" data-toggle="modal" data-target="#myModal"> 
       <span class="glyphicon glyphicon-plus"></span> 
     </button>
   </div>
@@ -164,15 +173,38 @@
   </div>
 
   <div class="list-group">
-    <a class="list-group-item" ng-click="c.selectItem($index)" ng-repeat="note in data.notes | filter: noteFilter">
+    <a class="list-group-item" ng-click="c.selectItem(note)" 
+       ng-repeat="note in data.notes | filter : {'note_title': noteFilter}">
       <h4 class="list-group-item-heading">
-        {{note.title}}
+        {{note.note_title}}
       </h4>
       <p class="list-group-item-text">
-        {{note.note}}
+        {{note.note_details}}
       </p>
     </a>
   </div>
-</div>]]></template>
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Modal Header</h4>
+        </div>
+        <div class="modal-body">
+          <input class="form-control" id="modal-note-title" ng-model="c.data.curentNote.note_title" ng-model-options="{debounce: 300}"/>
+        </div>
+        <div class="modal-body">
+          <textarea class="form-control" id="modal-note-body"  ng-model="c.data.curentNote.note_details" ng-model-options="{debounce: 300}"></textarea>
+        </div>
+      </div>      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="c.updateNotePopup()">OK</button>
+      </div>
+    </div>      
+  </div>
+</div> ]]></template>
     </sp_widget>
 </record_update>

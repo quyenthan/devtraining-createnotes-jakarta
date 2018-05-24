@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update>
+    <sys_documentation element="note_title" label="Note Title" language="en" table="x_snc_createnotes_qt_note">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>note_title</element>
+            <help/>
+            <hint/>
+            <label>Note Title</label>
+            <language>en</language>
+            <name>x_snc_createnotes_qt_note</name>
+            <plural>Note Titles</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-17 02:06:20</sys_created_on>
+            <sys_id>5b5e38b24f0213003d9ec3818110c737</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Note Title</sys_name>
+            <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
+            <sys_update_name>sys_documentation_x_snc_createnotes_qt_note_note_title_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-17 02:06:20</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

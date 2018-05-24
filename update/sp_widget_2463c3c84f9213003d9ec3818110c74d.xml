@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <client_script><![CDATA[function($rootScope, $scope, spUtil) {
+	var c = this;
+	c.data.selectedItem = {};
+
+	c.selectCategory = function(selectedCategory){		
+		console.log(selectedCategory);
+		c.data.selectedItem = selectedCategory;
+		c.server.get({
+			categoryId : selectedCategory.sys_id,
+			action : 'getNoteList'
+		}).then(function(r){
+			$rootScope.categoryName = selectedCategory.category_name;
+			$rootScope.categoryId = selectedCategory.sys_id;
+			$rootScope.$emit('showNoteList', r.data.noteList);
+			// true: Show Note list
+			$rootScope.$emit('toggleNoteList', true);
+			// false: Hide Note details
+			$rootScope.$emit('toggleNoteDetail', false);
+			// false: Hide Category details
+			$rootScope.$emit('toggleCategoryDetail', false);
+		});		
+		// Set widget options
+		if (!c.options.category){
+			c.options.category = 'My Category';
+		}
+	};
+	
+	c.newCategory = function (){
+		c.server.get({
+			action : 'newCategory'
+		}).then(function(r){
+			c.data.categoryList.unshift(r.data.newCategory);
+			$rootScope.$emit('showCategoryDetail', r.data.newCategory);
+			// Emply Note Detail
+			$rootScope.$emit('resetBody', "");
+		});
+	};
+	
+	c.editCategory = function editCategory(selectedCategory){
+		c.data.selectedItem = selectedCategory;
+		c.server.get({
+			cateSysId : selectedCategory.sys_id,
+			action : 'getCategory'
+		}).then(function(r){
+			// Pass category detail
+			$rootScope.$emit('setDetails', r.data.categoryObj);
+			
+			// true: Show Note list
+			$rootScope.$emit('toggleNoteList', false);
+			// false: Hide Note details
+			$rootScope.$emit('toggleNoteDetail', false);
+			// false: Hide Category details
+			$rootScope.$emit('toggleCategoryDetail', true);
+		});
+	}
+	
+	$rootScope.$on('updateNumberOfNote', function (event, data){
+		c.data.selectedItem.numberOfNotes = data;
+	});
+	
+	$rootScope.$on('updateCategoryName', function (event, data){
+		c.data.selectedItem.category_name = data.category_name;
+		//c.server.refresh();
+	});
+	
+	$rootScope.$on('refreshList', function (event){
+		c.server.refresh();
+	});
+	
+	spUtil.recordWatch($scope, "x_snc_createnotes_category", "numberSTARTSWITHCATE", function(name) {
+		c.server.refresh();
+	});
+}
+]]></client_script>
+        <controller_as>c</controller_as>
+        <css>h3.panel-title {
+  font-size:20px;
+  padding-top:5px;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>category_list</id>
+        <internal>false</internal>
+        <link/>
+        <name>Category List</name>
+        <option_schema>[{"hint":"","name":"category","default_value":"Category","label":"Category","type":"string"}]</option_schema>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+
+	data.categoryList = [];
+	data.noteList = [];
+	var categoryObj = {};
+
+	var categoryList = new GlideRecord('x_snc_createnotes_category');
+	//noteGR.addQuery('user', gs.getUser().getID());
+	categoryList.orderByDesc('sys_created_on');
+	//noteGR.setLimit(options.maximum_records_to_display);
+	categoryList.query();
+	while (categoryList.next()) {
+		categoryObj = {};
+		$sp.getRecordDisplayValues(categoryObj, categoryList, 'category_name, sys_id');
+
+		// Note
+		var count = 0;
+		//var note = new GlideAggregate('x_snc_createnotes_qt_note');
+		//note.addQuery('category', categoryObj.sys_id);
+		//note.addAggregate('COUNT');
+		//note.query();
+
+		//if(note.next()) {
+		//	count = note.getAggregate('COUNT');
+		//}
+
+		// Query
+		var note2 = new GlideRecord("x_snc_createnotes_qt_note");
+		note2.addQuery('category', categoryObj.sys_id);
+		note2.query();
+		// Get count
+		count = note2.getRowCount();
+		categoryObj.numberOfNotes = count;
+
+		// Add to data
+		data.categoryList.push(categoryObj);
+	}
+
+	if (input){
+		if (input.action == 'getNoteList'){
+			var noteRecord = new GlideRecord("x_snc_createnotes_qt_note");
+			noteRecord.addQuery('category', input.categoryId);
+			noteRecord.query();
+			while (noteRecord.next()){
+				var noteObj = {};
+				$sp.getRecordDisplayValues(noteObj, noteRecord, 'note_title,note_details,category,sys_id');
+				data.noteList.push(noteObj);
+			}
+		}
+		if (input.action == 'getCategory'){
+			data.categoryObj = {};
+			var categoryRecord = new GlideRecord('x_snc_createnotes_category');
+			categoryRecord.addQuery('sys_id', input.cateSysId);
+			categoryRecord.query();
+			while (categoryRecord.next()) {
+				categoryObj = {};
+				$sp.getRecordDisplayValues(categoryObj, categoryRecord, 'category_name, sys_id');
+				data.categoryObj = categoryObj;
+			}
+		}
+		if (input.action == 'newCategory'){
+			var newCategory = new GlideRecord('x_snc_createnotes_category');
+			newCategory.newRecord();
+			newCategory.insert();
+			
+			data.newCategory = {};
+			$sp.getRecordDisplayValues(data.newCategory, newCategory, 'sys_id, category_name');
+		}
+	}
+
+}
+)();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-05-21 08:59:55</sys_created_on>
+        <sys_id>2463c3c84f9213003d9ec3818110c74d</sys_id>
+        <sys_mod_count>122</sys_mod_count>
+        <sys_name>Category List</sys_name>
+        <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
+        <sys_update_name>sp_widget_2463c3c84f9213003d9ec3818110c74d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-24 02:04:50</sys_updated_on>
+        <template><![CDATA[<div class="panel panel-primary">
+  <div class="panel-heading clearfix">
+    <h3 class="panel-title pull-left">
+      {{::c.options.category}}
+    </h3>
+    <button class="btn btn-default pull-right" ng-click="c.newCategory()"> 
+      <span class="glyphicon glyphicon-plus"></span> 
+    </button>
+  </div>
+  
+  <div class="panel-body"> 
+    <input placeholder="Filter" class="form-control" ng-model="categoryFilter" /> 
+  </div>
+
+  <div class="list-group">
+    <div class="list-group-item" 
+         ng-repeat="category in data.categoryList | filter : {'category_name': categoryFilter}">
+      <div class="row">
+        <div class="col-md-9" ng-click="c.selectCategory(category)" >
+          <h4 class="list-group-item-heading">
+            {{category.category_name}}
+          </h4>
+          <p class="list-group-item-text" ng-if="category.numberOfNotes <= 1">
+            {{category.numberOfNotes}} item
+          </p>
+          <p class="list-group-item-text" ng-if="category.numberOfNotes > 1">
+            {{category.numberOfNotes}} items
+          </p>
+        </div>
+        <div class="col-md-3" ng-click="c.editCategory(category)">
+          <button class="btn btn-default pull-right" > 
+            <span class="glyphicon glyphicon-pencil"></span> 
+          </button>
+        </div>
+      </div>
+    </div>    
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

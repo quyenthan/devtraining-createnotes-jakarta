@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element label="QT Note" max_length="40" name="x_snc_createnotes_qt_note" type="collection">
+        <element label="Category" max_length="32" name="category" reference="x_snc_createnotes_category" type="reference"/>
+        <element default="Details" label="Note Details" max_length="1000" name="note_details" type="string"/>
+        <element default="Title" label="Note Title" max_length="255" name="note_title" type="string"/>
+        <element attributes="ignore_filter_on_new=true" default="javascript:global.getNextObjNumberPadded();" label="Number" max_length="40" name="number" type="string"/>
+        <index name="index">
+            <element name="category"/>
+        </index>
+    </element>
+</database>
