@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sys_embedded_help_role">
+    <sys_embedded_help_role action="INSERT_OR_UPDATE">
+        <order>1000</order>
+        <role display_value="x_58872_needit.needit_task_user" name="x_58872_needit.needit_task_user">d431740c0f0232000d030dbce1050e47</role>
+        <sys_class_name>sys_embedded_help_role</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2018-05-25 02:32:04</sys_created_on>
+        <sys_id>4ef01add4f1693003d9ec3818110c7ef</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>d431740c0f0232000d030dbce1050e47</sys_name>
+        <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
+        <sys_update_name>sys_embedded_help_role_4ef01add4f1693003d9ec3818110c7ef</sys_update_name>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2018-05-25 02:32:04</sys_updated_on>
+    </sys_embedded_help_role>
+</record_update>

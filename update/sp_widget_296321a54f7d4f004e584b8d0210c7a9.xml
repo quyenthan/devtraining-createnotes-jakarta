@@ -7,21 +7,20 @@
 	// Use a position indicator to know which record to update
 	c.notePos = 0;
 	c.data.selectedNote = {};
-	c.data.notes = null;
+	//c.data.notes = [];
 	c.data.isShow = false;
 
 	// Subscribe to event.  Set the new title and note values on the 
 	// c.data object
 	$rootScope.$on('updateNoteObj', function(event,data) {
-		c.data.selectedNote.note_title = data.note_title;
-		c.data.selectedNote.note_details = data.note_details;		
+		c.snRefreshList();
 	});
 
 	$rootScope.$on('showNoteList', function (event, noteList){
 		c.data.notes = noteList;
 		c.options.title = $rootScope.categoryName.toString(); // Not working
 	});
-	
+
 	$rootScope.$on('toggleNoteList', function (event, isShow){
 		// Show this widget
 		c.data.isShow = isShow;
@@ -43,7 +42,7 @@
 	c.selectItem = function(selectedNote) { 
 		// Hide this widget
 		c.data.isShow = false;
-		
+
 		// Set the position indicator to the index value passed in on select
 		c.data.selectedNote = selectedNote;
 		var id = selectedNote.sys_id;
@@ -67,12 +66,21 @@
 			$rootScope.$emit('updateNumberOfNote', c.data.notes.length);
 		});
 	}
+	
+	c.snRefreshList = function(){
+		c.server.get({
+			action: 'snRefreshList',
+			cateId: $rootScope.categoryId
+		}).then(function(r){
+			c.data.notes = r.data.notes;
+		});
+	}
 
 	c.snNoteUpdate = function(name){
 		for (var i = 0; i < c.data.notes.length; i++){
 			if (c.data.notes[i].sys_id == name.data.sys_id){
-				if (name.data.record.note) c.data.notes[i].note = name.data.record.note.display_value;
-				if (name.data.record.title) c.data.notes[i].title = name.data.record.title.display_value;
+				if (name.data.record.note_details) c.data.notes[i].note_details = name.data.record.note_details.display_value;
+				if (name.data.record.note_title) c.data.notes[i].note_title = name.data.record.note_title.display_value;
 				c.server.update();
 			}
 		}
@@ -81,7 +89,8 @@
 	c.snNoteDelete = function(sysId){
 		c.server.get({
 			action: 'snDeleteNote',
-			noteId:	sysId
+			noteId:	sysId,
+			cateId: $rootScope.categoryId
 		}).then(function(r){
 			c.data.notes = r.data.notes;
 		});
@@ -97,16 +106,15 @@
 	}
 
 	spUtil.recordWatch($scope, "x_snc_createnotes_qt_note", "numberSTARTSWITHQT", function(name) {
+		console.log(name.data.operation);
 		if (name.data.operation == "insert"){
-			c.server.refresh();
+			c.snRefreshList();
 		}
 		if (name.data.operation == "update"){
-			//c.snNoteUpdate(name);
-			c.server.refresh();
+			c.snNoteUpdate(name);
 		}
 		if (name.data.operation == "delete"){
-			//c.snNoteDelete(name.data.sys_id);
-			c.server.refresh();
+			c.snNoteDelete(name.data.sys_id);
 		}
 	});
 }
@@ -137,6 +145,7 @@
         <roles/>
         <script><![CDATA[(function() {
 	if (input) {
+		data.notes = [];
 		if (input.action == 'newNote') {
 			var newNote = new GlideRecord('x_snc_createnotes_qt_note');
 			newNote.newRecord();
@@ -145,12 +154,16 @@
 			data.noteID = id;
 			data.newNote = {};
 			$sp.getRecordValues(data.newNote, newNote, "note_title, note_details, sys_id, category");
+		}		
+		if (input.action == 'snRefreshList'){
+			data.notes = getListNote(input.cateId);
 		}
 		if(input.action == 'snDeleteNote'){
 			var deleteNote = new GlideRecord('x_snc_createnotes_qt_note');
 			if(deleteNote.get(input.noteId)){
 				deleteNote.deleteRecord();
 			}
+			data.notes = getListNote(input.cateId);
 		}
 		if (input.action == 'updateNoteDetail'){
 			var noteRecord = new GlideRecord('x_snc_createnotes_qt_note');
@@ -164,20 +177,34 @@
 		}
 	}
 }
-)();]]></script>
+)();
+
+// get list notes by Category sys_Id
+function getListNote(cateId){
+	var listNote = [];
+	var noteRecord = new GlideRecord("x_snc_createnotes_qt_note");
+	noteRecord.addQuery('category', cateId);
+	noteRecord.query();
+	while (noteRecord.next()){
+		var noteObj = {};
+		$sp.getRecordDisplayValues(noteObj, noteRecord, 'note_title,note_details,category,sys_id');
+		listNote.push(noteObj);
+	}
+	return listNote;
+}]]></script>
         <servicenow>false</servicenow>
         <sys_class_name>sp_widget</sys_class_name>
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2017-10-14 01:08:53</sys_created_on>
         <sys_id>296321a54f7d4f004e584b8d0210c7a9</sys_id>
-        <sys_mod_count>204</sys_mod_count>
+        <sys_mod_count>250</sys_mod_count>
         <sys_name>Notes List</sys_name>
         <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
         <sys_policy/>
         <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
         <sys_update_name>sp_widget_296321a54f7d4f004e584b8d0210c7a9</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2018-05-24 05:11:23</sys_updated_on>
+        <sys_updated_on>2018-05-29 10:30:19</sys_updated_on>
         <template><![CDATA[<div class="panel panel-primary" ng-show="c.data.isShow">
   <div class="panel-heading clearfix">
     <h3 class="panel-title pull-left">

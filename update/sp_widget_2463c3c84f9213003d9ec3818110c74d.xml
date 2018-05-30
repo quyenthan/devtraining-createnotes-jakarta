@@ -4,6 +4,8 @@
         <client_script><![CDATA[function($rootScope, $scope, spUtil) {
 	var c = this;
 	c.data.selectedItem = {};
+	
+	console.log(_.head(["Nam", "Quyen"])); //lodash
 
 	c.selectCategory = function(selectedCategory){		
 		c.data.selectedItem = selectedCategory;
@@ -94,9 +96,9 @@
         <roles/>
         <script><![CDATA[(function() {
 
+	var categoryObj = {};
 	data.categoryList = [];
 	data.noteList = [];
-	var categoryObj = {};
 
 	var categoryList = new GlideRecord('x_snc_createnotes_category');
 	//noteGR.addQuery('user', gs.getUser().getID());
@@ -156,7 +158,7 @@
 			var newCategory = new GlideRecord('x_snc_createnotes_category');
 			newCategory.newRecord();
 			newCategory.insert();
-			
+
 			data.newCategory = {};
 			$sp.getRecordDisplayValues(data.newCategory, newCategory, 'sys_id, category_name');
 		}
@@ -169,14 +171,14 @@
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2018-05-21 08:59:55</sys_created_on>
         <sys_id>2463c3c84f9213003d9ec3818110c74d</sys_id>
-        <sys_mod_count>123</sys_mod_count>
+        <sys_mod_count>134</sys_mod_count>
         <sys_name>Category List</sys_name>
         <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
         <sys_policy/>
         <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
         <sys_update_name>sp_widget_2463c3c84f9213003d9ec3818110c74d</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2018-05-24 05:11:21</sys_updated_on>
+        <sys_updated_on>2018-05-29 09:48:57</sys_updated_on>
         <template><![CDATA[<div class="panel panel-primary">
   <div class="panel-heading clearfix">
     <h3 class="panel-title pull-left">
